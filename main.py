@@ -26,10 +26,12 @@ app.secret_key = config["session-secret"]
 
 @app.route("/fb_callback", methods=["GET", "POST"])
 def callback():
-    info = json.loads(request.form)
+    data = request.form
 
-    print(json.dumps(info, indent=4))
-
+    if data["hub.mode"] == "subscribe" and data["hub.verify_token"] == app_key:
+        return data["hub.challenge"], status.HTTP_200
+    else:
+        return "", status.HTTP_403_FORBIDDEN
 
 if __name__ == "__main__":
     run_simple(config["website"], config["port"], app,
