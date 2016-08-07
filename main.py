@@ -9,7 +9,7 @@ import requests
 import sys
 
 app_key = "ETy&^^ReC*R+Ynk*GD6YQVmyf!3TdYWS"
-page_access_token = "EAAYpzmsUt2UBABvSyMBgPqriDAWjlV49k7ZC9doivITdKKlgx27GGz76Vd7y8EZCLllZAlEyoRu4g9zJncUdsZAvXW6BHUl2X84ZCsFkFxrKVPizbzM145eVEzFEahZAO8TqGMestK7xzPZAkiS3Lg7ZBaf4RfrAewZBli6aUP9pqzgZDZD"
+page_access_token = "EAAYpzmsUt2UBALSGW8fHpqOnUPEmJG4F2S2jGp4nZAAIXzmBykzDernSZCouqV2iakAzOxK35NrC1QzY1nU5acyRySEACTJ9EeHHEsWktIdQ7zZBmJytK93lL7lbW5kQovPex1k5mc5mATI1qjfkjz5vw9sms2mZAIoeTLcKEwZDZD"
 
 
 def eprint(*args, **kwargs):
@@ -71,6 +71,9 @@ def post_callback():
 
                 # user clicked/tapped "postback" button in earlier message
                 if messaging_event.get("postback"):
+                    pass
+
+                if messaging_event.get("reads"):
                     pass
 
     return "ok", 200
