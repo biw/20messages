@@ -8,6 +8,8 @@ import os
 import requests
 import sys
 
+app_key = "ETy&^^ReC*R+Ynk*GD6YQVmyf!3TdYWS"
+
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -23,8 +25,10 @@ app.secret_key = config["session-secret"]
 
 
 @app.route("/fb_callback", methods=["GET", "POST"])
-def index():
-    return "hello"
+def callback():
+    info = json.loads(request.form)
+
+    print(json.dumps(info, indent=4))
 
 
 if __name__ == "__main__":
