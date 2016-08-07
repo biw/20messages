@@ -1,0 +1,11 @@
+{
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "dbname": "coloradoifc",
+    "charset": "utf8mb4",
+    "session-secret": "something-long-and-random",
+    "website": "localhost",
+    "debug": false,
+    "port": 5000
+}

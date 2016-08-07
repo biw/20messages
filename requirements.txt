@@ -1,0 +1,4 @@
+Flask==0.10.1
+PyMySQL==0.7.2
+Flask-Api==0.6.5
+Bcrypt==2.0.0
