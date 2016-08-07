@@ -5,7 +5,7 @@
     "dbname": "coloradoifc",
     "charset": "utf8mb4",
     "session-secret": "something-long-and-random",
-    "website": "api.undercover.chat",
+    "website": "localhost",
     "debug": false,
     "port": 6500
 }
