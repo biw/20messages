@@ -41,11 +41,25 @@ def handle_message(raw_event):
     if red_user.in_chat:
         other_user = utils.get_redis(red_user.in_chat_with)
 
+        try:
+            x = red_user.messages_left
+            x = other_user.messages_left
+        except:
+            red_user.messages_left = 30
+            other_user.messages_left = 30
+
         red_user.messages_left -= 1
         other_user.messages_left -= 1
-        text = "undercover says '{0}'".format(raw_event["message"]["text"])
+        text = "🕵️ says '{0}'".format(raw_event["message"]["text"])
 
-        if red_user.messages == 0:
+        try:
+            x = red_user.on_edge
+            x = other_user.on_edge
+        except:
+            red_user.on_edge = False
+            other_user.on_edge = False
+
+        if red_user.messages_left == 0:
             red_user.in_chat = False
             red_user.on_edge = True
             other_user.in_chat = False
