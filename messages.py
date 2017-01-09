@@ -245,6 +245,7 @@ def decision_time_yes(bot, cuser, other_user):
 def handle_chat(bot, cuser, raw_message):
     other_user = utils.get_redis(cuser.in_chat_with)
 
+    messages_display = cuser.messages_left
     cuser.messages_left -= 1
     other_user.messages_left -= 1
 
@@ -263,12 +264,12 @@ def handle_chat(bot, cuser, raw_message):
 
     if "text" in raw_message.keys():
         text_message = raw_message["text"]
-        text = "{0}: '{1}'".format(messages_left, text_message)
+        text = "{0}: '{1}'".format(messages_display, text_message)
         bot.send_text_message(other_user.id, text)
 
     elif "url" in raw_message["attachments"][0]["payload"].keys():
         img_url = raw_message["attachments"][0]["payload"]["url"]
-        text = "{0}:".format(messages_left)
+        text = "{0}:".format(messages_display)
 
         bot.send_text_message(other_user.id, text)
         bot.send_image_url(other_user.id, img_url)
