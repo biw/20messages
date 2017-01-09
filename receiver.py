@@ -6,6 +6,8 @@ import messages
 
 
 def handle_auth_message(user_id, code):
+    # get the info used for all messages
+    bot = Bot(utils.config["page_access_token"])
     cuser = utils.get_redis(user_id)
     new_user = False
 

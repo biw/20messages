@@ -1,0 +1,12 @@
+{
+    "website": "https://example.com",
+    "debug": true,
+    "port": 5000,
+    "redis_host": "localhost",
+    "redis_port": "6379",
+    "redis_db": 0,
+    "page_access_token": "token_here",
+    "fb_verify_token": "token_here",
+    "fb_client_id" : "id_here",
+    "fb_client_secret" : "secret_here"
+}

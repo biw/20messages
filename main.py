@@ -8,7 +8,6 @@ import receiver
 
 app = Flask(__name__, template_folder='templates')
 app.debug = utils.config["debug"]
-app.secret_key = utils.config["session-secret"]
 
 
 @app.route("/fb_callback", methods=["GET", "POST"])
@@ -23,7 +22,7 @@ def get_callback():
     data = request.args
 
     if(data.get("hub.mode") == "subscribe" and
-            data.get("hub.verify_token") == utils.config["app_key"]):
+            data.get("hub.verify_token") == utils.config["fb_verify_token"]):
         return data.get("hub.challenge"), 200
 
     elif(data.get("code") != None and
@@ -60,5 +59,5 @@ def bye():
 
 
 if __name__ == "__main__":
-    run_simple(utils.config["website"], utils.config["port"], app,
+    run_simple("localhost", utils.config["port"], app,
                use_reloader=True, use_debugger=True, use_evalex=True)

@@ -38,19 +38,22 @@ class user():
 
         return user_list
 
-    def get_api_key(self, code):
+    def set_api_key(self, code):
 
-        raw_data = requests.get("https://graph.facebook.com/v2.8/oauth/access_token?" +
-                                "client_id=1734816396785509" +
-                                "&redirect_uri=https://262981a7.ngrok.io/fb_callback?id=" + user_id +
-                                "&client_secret=3ead994a2fd130e838ea2106361c256b" +
-                                "&code=" + code).json()
+        raw_data = requests.get("https://graph.facebook.com/v2.8/oauth/" +
+                                "access_token?client_id=" +
+                                utils.config["fb_client_id"] +
+                                "&redirect_uri=" + utils.config["website"] +
+                                "/fb_callback?id=" + self.id + "&client_secret="
+                                + utils.config["fb_client_secret"] + "&code=" +
+                                code).json()
+
         access_token = raw_data["access_token"]
 
         self.api_key = access_token
 
-        req_string = ("https://graph.facebook.com/v2.8/me?fields=id,name&access_token="
-                      + self.api_key)
+        req_string = ("https://graph.facebook.com/v2.8/me?" +
+                      "fields=id,name&access_token=" + self.api_key)
 
         self.profile_id = requests.get(req_string).json()["id"]
         utils.set_redis("-" + str(self.profile_id), self.id)
@@ -104,9 +107,9 @@ class user():
 def intro_message(bot, cuser):
 
     permission_url = ("https://www.facebook.com/v2.8/dialog/oauth?client_id=" +
-                      "1734816396785509&scope=user_friends" + "" +
-                      "&response_type=code&redirect_uri=" + "https://262981a7.ngrok.io/fb_" +
-                      "callback?id=" + cuser.id)
+                      utils.config["fb_client_id"] + "&scope=user_friends" +
+                      "&response_type=code&redirect_uri=" +
+                      utils.config["website"] + "callback?id=" + cuser.id)
     elements = []
     element = Element(title="Let undercover.chat look at your friend list.",
                       image_url=("http://static1.businessinsider.com/image/" +
