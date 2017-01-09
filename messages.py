@@ -27,6 +27,7 @@ class user():
         self.on_edge = False
         self.messages_left = 20
         self.showed_id = False
+        self.needs_api_update = False
 
     def get_friendlist(self):
 
@@ -37,15 +38,21 @@ class user():
 
         return user_list
 
-    def set_api_key(self, key):
-        self.api_key = key
+    def get_api_key(self, code):
+
+        raw_data = requests.get("https://graph.facebook.com/v2.8/oauth/access_token?" +
+                                "client_id=1734816396785509" +
+                                "&redirect_uri=https://262981a7.ngrok.io/fb_callback?id=" + user_id +
+                                "&client_secret=3ead994a2fd130e838ea2106361c256b" +
+                                "&code=" + code).json()
+        access_token = raw_data["access_token"]
+
+        self.api_key = access_token
 
         req_string = ("https://graph.facebook.com/v2.8/me?fields=id,name&access_token="
                       + self.api_key)
 
         self.profile_id = requests.get(req_string).json()["id"]
-        print(self.profile_id, self.id)
-
         utils.set_redis("-" + str(self.profile_id), self.id)
 
     def is_different(self, other_user):
@@ -112,30 +119,46 @@ def intro_message(bot, cuser):
     bot.send_text_message(cuser.id, "Hello, welcome to undercover.chat!")
     bot.send_text_message(
         cuser.id, ("We let you talk with a random Facebook friend anonymously for" +
-                   " 30 messages. Then you both vote to share your profile " +
+                   " 20 messages. Then you both vote to share your profile " +
                    "with each other. It only gets shared if both people agree" +
                    " to share it."))
 
     bot.send_text_message(cuser.id, "Please click the link above 🔝")
 
 
-def after_registering(user_id):
-
+def after_registering(cuser):
     bot = Bot(utils.config["page_access_token"])
-    cuser = user(bot.get_user_info(
-        user_id), user_id)
 
     bot.send_text_message(cuser.id, "You are now registered!")
     send_starting_gate(bot, cuser)
 
 
+def refresh_api_key(cuser):
+    bot = Bot(utils.config["page_access_token"])
+
+    bot.send_text_message(
+        cuser.id, "The API was refreshed. Everthing looks good!")
+    send_starting_gate(bot, cuser)
+
+
 def send_starting_gate(bot, cuser):
     buttons = []
-    button = Button(title='Start Undercover Chat',
+    button = Button(title='Start Chat',
                     type='postback', payload='starting_gate')
     buttons.append(button)
     text = 'Ready to get started?'
     result = bot.send_button_message(cuser.id, text, buttons)
+
+
+def found_chat_reply(bot, cuser, other_id):
+    text_1 = "You are now connected with a friend."
+    text2 = "You have 20 messages left"
+
+    bot.send_text_message(cuser.id, text_1)
+    bot.send_text_message(other_id, text_1)
+
+    bot.send_text_message(cuser.id, text2)
+    bot.send_text_message(other_id, text_2)
 
 
 def send_in_limbo(bot, cuser):
@@ -144,13 +167,14 @@ def send_in_limbo(bot, cuser):
 
 
 def send_decision_message(bot, cuser):
+    text = 'Would you like to share your identy?'
     buttons = []
-    button = Button(title='Agree to share identy',
+    button = Button(title='Yes',
                     type='postback', payload='decision_time_yes')
-    button = Button(title='don\'t agree to share identy',
+    buttons.append(button)
+    button = Button(title='No',
                     type='postback', payload='decision_time_no')
     buttons.append(button)
-    text = 'Ready to get started?'
     result = bot.send_button_message(cuser.id, text, buttons)
 
 
@@ -159,3 +183,86 @@ def waiting_for_decision(bot, cuser):
         cuser.id, ("Waiting for the other user to share." +
                    " Pick the other option about to" +
                    " disconnect."))
+
+
+def decision_time_no(bot, cuser, other_user):
+    cuser.on_edge = False
+    cuser.in_chat_with = ""
+    utils.set_redis(cuser.id, cuser)
+
+    other_user.on_edge = False
+    other_user.in_chat_with = ""
+    utils.set_redis(other_user.id, other_user)
+
+    message_text = "Both random parties did not agree to share.\nConnection Disconnected"
+
+    bot.send_text_message(cuser.id, message_text)
+    bot.send_text_message(other_user.id, message_text)
+
+
+def decision_time_yes(bot, cuser, other_user):
+    red_user.showed_id = True
+
+    # if the other user has not decided yet
+    if not other_user.showed_id:
+        utils.set_redis(red_user.id, red_user)
+        return
+
+    cuser.showed_id = False
+    other_user.showed_id = False
+
+    cuser.on_edge = False
+    other_user.on_edge = False
+
+    cuser.in_chat_with = ""
+    other_user.in_chat_with = ""
+
+    utils.set_redis(cuser.id, cuser)
+    utils.set_redis(other_user.id, other_user)
+
+    bot.send_image_url(cuser.id, other_user.profile_pic)
+    bot.send_image_url(other_user.id, cuser.profile_pic)
+
+    output = "The user you were chatting with was {0} {1}"
+    bot.send_text_message(cuser.id, output.format(
+        other_user.first_name, other_user.last_name))
+    bot.send_text_message(other_user.id, output.format(
+        cuser.first_name, cuser.last_name))
+
+    second_out = "Your conversation on undercover.chat with them is over\n"
+    bot.send_text_message(cuser.id, second_out)
+    bot.send_text_message(other_user.id, second_out)
+
+    messages.send_starting_gate(bot, cuser)
+    messages.send_starting_gate(bot, other_user)
+
+
+def handle_chat(bot, cuser):
+    other_user = utils.get_redis(cuser.in_chat_with)
+
+    cuser.messages_left = 20
+    other_user.messages_left = 20
+
+    cuser.messages_left -= 1
+    other_user.messages_left -= 1
+
+    text = "{0}: '{1}'".format(
+        cuser.messages_left, aw_event["message"]["text"])
+
+    cuser.on_edge = False
+    other_user.on_edge = False
+
+    if cuser.messages_left == 0:
+        cuser.in_chat = False
+        cuser.on_edge = True
+        other_user.in_chat = False
+        other_user.on_edge = True
+
+    utils.set_redis(cuser.id, cuser)
+    utils.set_redis(other_user.id, other_user)
+
+    bot.send_text_message(other_user.id, text)
+
+    if cuser.messages_left == 0:
+        send_decision_message(bot, cuser)
+        send_decision_message(bot, other_user)

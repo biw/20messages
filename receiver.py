@@ -1,18 +1,53 @@
-import utils
 from pymessenger.bot import Bot
-import pickle
-import json
 
 # local import
+import utils
 import messages
+
+
+def handle_auth_message(user_id, code):
+    cuser = utils.get_redis(user_id)
+    new_user = False
+
+    if cuser == None:
+        cuser = messages.user(bot.get_user_info(user_id), user_id)
+        new_user = True
+
+    needs_update = cuser.needs_api_update
+    cuser.needs_api_update = False
+    cuser.set_api_key(code)
+    utils.set_redis(user_id, cuser)
+
+    if new_user:
+        messages.after_registering(cuser)
+    elif needs_update:
+        messages.refresh_api_key()
+
+
+def handle_event(raw_event):
+    if raw_event.get("message"):  # someone sent us a message
+        handle_message(raw_event)
+
+    if raw_event.get("delivery"):  # delivery confirmation
+        handle_delivery(raw_event)
+
+    if raw_event.get("optin"):  # optin confirmation
+        handle_optin(raw_event)
+
+    # user clicked/tapped "postback" button in earlier message
+    if raw_event.get("postback"):
+        handle_postback(raw_event)
+
+    if raw_event.get("reads"):
+        handle_reads(raw_event)
 
 
 def handle_message(raw_event):
 
     # get the info used for all messages
     bot = Bot(utils.config["page_access_token"])
-    cuser = messages.user(bot.get_user_info(
-        raw_event["sender"]["id"]), raw_event["sender"]["id"])
+    user_id = raw_event["sender"]["id"]
+    cuser = messages.user(bot.get_user_info(user_id), user_id)
 
     red_user = utils.get_redis(cuser.id)
 
@@ -25,70 +60,28 @@ def handle_message(raw_event):
     if red_user.is_different(cuser):
         utils.set_redis(cuser.id, red_user)
 
-    if red_user.looking_for_chat:
-        user1 = utils.get_redis("1256977684325846")
-        user2 = utils.get_redis("1062053993873789")
-        user1.in_chat_with = user2.id
-        user2.in_chat_with = user1.id
-        user1.looking_for_chat = False
-        user2.looking_for_chat = False
-        user1.in_chat = True
-        user2.in_chat = True
-        utils.set_redis(user1.id, user1)
-        utils.set_redis(user2.id, user2)
+    elif red_user.looking_for_chat:
         messages.send_in_limbo(bot, red_user)
 
-    if red_user.in_chat:
-        other_user = utils.get_redis(red_user.in_chat_with)
+    elif red_user.in_chat:
+        messages.handle_chat(bot, red_user)
 
-        try:
-            x = red_user.messages_left
-            x = other_user.messages_left
-        except:
-            red_user.messages_left = 30
-            other_user.messages_left = 30
+    elif red_user.on_edge and not red_user.showed_id:
+        messages.send_decision_message(bot, red_user)
 
-        red_user.messages_left -= 1
-        other_user.messages_left -= 1
-        text = "🕵️ says '{0}'".format(raw_event["message"]["text"])
-
-        try:
-            x = red_user.on_edge
-            x = other_user.on_edge
-        except:
-            red_user.on_edge = False
-            other_user.on_edge = False
-
-        if red_user.messages_left == 0:
-            red_user.in_chat = False
-            red_user.on_edge = True
-            other_user.in_chat = False
-            other_user.on_edge = True
-
-        utils.set_redis(red_user.id, red_user)
-        utils.set_redis(other_user.id, other_user)
-
-        bot.send_text_message(other_user.id, text)
-        bot.send_text_message(
-            red_user.id, "'{0}' Messages Left".format(red_user.messages_left))
-        bot.send_text_message(
-            other_user.id, "'{0}' Messages Left".format(red_user.messages_left))
-    if red_user.on_edge and not red_user.showed_id:
-        messages.send_decision_message()
-
-    if red_user.on_edge and red_user.showed_id:
+    elif red_user.on_edge and red_user.showed_id:
         messages.waiting_for_decision(bot, red_user)
 
-    if not red_user.in_chat and not red_user.looking_for_chat and not red_user.on_edge:
+    elif not red_user.in_chat and not red_user.looking_for_chat and not red_user.on_edge:
         messages.send_starting_gate(bot, red_user)
 
 
 def handle_delivery(raw_event):
-    return 0
+    return
 
 
 def handle_optin(raw_event):
-    return 0
+    return
 
 
 def handle_postback(raw_event):
@@ -109,104 +102,29 @@ def handle_postback(raw_event):
         if not red_user.in_chat and not red_user.looking_for_chat:
 
             red_user.set_looking_for_chat()
-            bot.send_text_message(
-                red_user.id, "Searching for someone to chat with...")
             found_chat = red_user.search_for_chat()
 
+            bot.send_text_message(red_user.id, "Searching...")
             if found_chat:
-                bot.send_text_message(
-                    red_user.id, "You are now connected with a friend.")
-                bot.send_text_message(
-                    red_user.id, "You have (20) messages left")
-
-                bot.send_text_message(
-                    found_chat, "You are now connected with a friend.")
-                bot.send_text_message(
-                    found_chat, "You have (20) messages left")
+                messages.found_chat_reply(bot, red_user, found_chat)
 
         elif red_user.looking_for_chat:
             messages.send_in_limbo(bot, red_user)
 
-        elif red_user.in_chat:
-            return
     elif payload == "decision_time_yes" or payload == "decision_time_no":
-        if red_user.on_edge:
-            other_user = utils.get_redis(red_user.in_chat_with)
-
-            if payload == "decision_time_no":
-                red_user.on_edge = False
-                red_user.in_chat_with = ""
-                utils.set_redis(red_user.id, red_user)
-
-                other_user.on_edge = False
-                other_user.in_chat_with = ""
-                utils.set_redis(other_user.id, other_user)
-
-                bot.send_text_message(
-                    red_user.id, ("Both random parties did not agree to share." +
-                                  "\nConnection Disconnected"))
-                bot.send_text_message(
-                    red_user.id, ("Both random parties did not agree to share." +
-                                  "\nConnection Disconnected"))
-
-            else:
-                try:
-                    print(red_user.showed_id)
-                except:
-                    red_user.showed_id = True
-                    pass
-
-                if red_user.showed_id:
-                    messages.waiting_for_decision(bot, red_user)
-                    return
-                red_user.showed_id = True
-
-                if other_user.showed_id == True:
-                    other_user.showed_id = False
-                    red_user.showed_id = False
-                    red_user.on_edge = False
-                    other_user.on_edge = False
-                    red_user.in_chat_with = ""
-                    other_user.in_chat_with = ""
-                    utils.set_redis(other_user.id, other_user)
-                    utils.set_redis(red_user.id, red_user)
-
-                    bot.send_image_url(red_user.id, other_user.profile_pic)
-                    bot.send_image_url(other_user.id, red_user.profile_pic)
-                    output = "The user you were chatting with was {0} {1}"
-                    bot.send_text_message(red_user.id, output.format(
-                        other_user.first_name, other_user.last_name))
-                    bot.send_text_message(other_user.id, output.format(
-                        red_user.first_name, red_user.last_name))
-                    second_out = "Your conversation on undercover.chat with them is over\n"
-                    bot.send_text_message(red_user.id, second_out)
-                    bot.send_text_message(other_user.id, second_out)
-                    messages.send_starting_gate(bot, red_user)
-                    messages.send_starting_gate(bot, other_user)
-                else:
-                    utils.set_redis(other_user.id, other_user)
-                    utils.set_redis(red_user.id, red_user)
-        else:
+        if not red_user.on_edge:
             return
+
+        other_user = utils.get_redis(red_user.in_chat_with)
+
+        if payload == "decision_time_no":
+            messages.decision_time_no(bot, red_user, other_user)
+        else:
+            if red_user.showed_id:
+                messages.waiting_for_decision(bot, red_user)
+                return
+            messages.decision_time_yes(bot, red_user, other_user)
 
 
 def handle_reads(raw_event):
-    return 0
-
-
-def handle_event(raw_event):
-    if raw_event.get("message"):  # someone sent us a message
-        handle_message(raw_event)
-
-    if raw_event.get("delivery"):  # delivery confirmation
-        handle_delivery(raw_event)
-
-    if raw_event.get("optin"):  # optin confirmation
-        handle_optin(raw_event)
-
-    # user clicked/tapped "postback" button in earlier message
-    if raw_event.get("postback"):
-        handle_postback(raw_event)
-
-    if raw_event.get("reads"):
-        handle_reads(raw_event)
+    return
