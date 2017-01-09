@@ -109,7 +109,7 @@ def intro_message(bot, cuser):
     permission_url = ("https://www.facebook.com/v2.8/dialog/oauth?client_id=" +
                       utils.config["fb_client_id"] + "&scope=user_friends" +
                       "&response_type=code&redirect_uri=" +
-                      utils.config["website"] + "callback?id=" + cuser.id)
+                      utils.config["website"] + "/fb_callback?id=" + cuser.id)
     elements = []
     element = Element(title="Let undercover.chat look at your friend list.",
                       image_url=("http://static1.businessinsider.com/image/" +
@@ -155,12 +155,12 @@ def send_starting_gate(bot, cuser):
 
 def found_chat_reply(bot, cuser, other_id):
     text_1 = "You are now connected with a friend."
-    text2 = "You have 20 messages left"
+    text_2 = "You have 20 messages left"
 
     bot.send_text_message(cuser.id, text_1)
     bot.send_text_message(other_id, text_1)
 
-    bot.send_text_message(cuser.id, text2)
+    bot.send_text_message(cuser.id, text_2)
     bot.send_text_message(other_id, text_2)
 
 
@@ -201,14 +201,16 @@ def decision_time_no(bot, cuser, other_user):
 
     bot.send_text_message(cuser.id, message_text)
     bot.send_text_message(other_user.id, message_text)
+    send_starting_gate(bot, cuser)
+    send_starting_gate(bot, other_user)
 
 
 def decision_time_yes(bot, cuser, other_user):
-    red_user.showed_id = True
+    cuser.showed_id = True
 
     # if the other user has not decided yet
     if not other_user.showed_id:
-        utils.set_redis(red_user.id, red_user)
+        utils.set_redis(cuser.id, cuser)
         return
 
     cuser.showed_id = False
@@ -226,7 +228,7 @@ def decision_time_yes(bot, cuser, other_user):
     bot.send_image_url(cuser.id, other_user.profile_pic)
     bot.send_image_url(other_user.id, cuser.profile_pic)
 
-    output = "The user you were chatting with was {0} {1}"
+    output = "You were chatting with {0} {1}!"
     bot.send_text_message(cuser.id, output.format(
         other_user.first_name, other_user.last_name))
     bot.send_text_message(other_user.id, output.format(
@@ -236,36 +238,44 @@ def decision_time_yes(bot, cuser, other_user):
     bot.send_text_message(cuser.id, second_out)
     bot.send_text_message(other_user.id, second_out)
 
-    messages.send_starting_gate(bot, cuser)
-    messages.send_starting_gate(bot, other_user)
+    send_starting_gate(bot, cuser)
+    send_starting_gate(bot, other_user)
 
 
-def handle_chat(bot, cuser):
+def handle_chat(bot, cuser, raw_message):
     other_user = utils.get_redis(cuser.in_chat_with)
-
-    cuser.messages_left = 20
-    other_user.messages_left = 20
 
     cuser.messages_left -= 1
     other_user.messages_left -= 1
 
-    text = "{0}: '{1}'".format(
-        cuser.messages_left, aw_event["message"]["text"])
+    messages_left = cuser.messages_left
 
-    cuser.on_edge = False
-    other_user.on_edge = False
-
-    if cuser.messages_left == 0:
+    if messages_left == 0:
         cuser.in_chat = False
         cuser.on_edge = True
         other_user.in_chat = False
         other_user.on_edge = True
+        cuser.messages_left = 20
+        other_user.messages_left = 20
 
     utils.set_redis(cuser.id, cuser)
     utils.set_redis(other_user.id, other_user)
 
-    bot.send_text_message(other_user.id, text)
+    if "text" in raw_message.keys():
+        text_message = raw_message["text"]
+        text = "{0}: '{1}'".format(messages_left, text_message)
+        bot.send_text_message(other_user.id, text)
 
-    if cuser.messages_left == 0:
+    elif "url" in raw_message["attachments"][0]["payload"].keys():
+        img_url = raw_message["attachments"][0]["payload"]["url"]
+        text = "{0}:".format(messages_left)
+
+        bot.send_text_message(other_user.id, text)
+        bot.send_image_url(other_user.id, img_url)
+
+    if messages_left == 0:
         send_decision_message(bot, cuser)
         send_decision_message(bot, other_user)
+    elif messages_left == 1:
+        bot.send_text_message(cuser.id, "You have one message left!")
+        bot.send_text_message(other_user.id, "You have one message left!")

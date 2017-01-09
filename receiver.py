@@ -4,6 +4,8 @@ from pymessenger.bot import Bot
 import utils
 import messages
 
+import json
+
 
 def handle_auth_message(user_id, code):
     # get the info used for all messages
@@ -66,7 +68,8 @@ def handle_message(raw_event):
         messages.send_in_limbo(bot, red_user)
 
     elif red_user.in_chat:
-        messages.handle_chat(bot, red_user)
+        raw_message = raw_event["message"]
+        messages.handle_chat(bot, red_user, raw_message)
 
     elif red_user.on_edge and not red_user.showed_id:
         messages.send_decision_message(bot, red_user)
