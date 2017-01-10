@@ -60,4 +60,5 @@ def bye():
 
 if __name__ == "__main__":
     run_simple(utils.config["local_website"], utils.config["port"], app,
-               use_reloader=True, use_debugger=True, use_evalex=True)
+               use_reloader=True, use_debugger=utils.config["debug"],
+               use_evalex=True)
