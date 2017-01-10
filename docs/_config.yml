@@ -1,0 +1,23 @@
+# general configuration
+url: http://20messages.com
+baseurl: ''
+
+# compass configuration
+compass:
+  name: "20messages"
+  # an avatar or logo (optional)
+  logo: "/images/spy.png"
+  # author will appear under the avatar (optional)
+  author: "719ben"
+  # tagline will appear under the title (optional)
+  tagline: "20 anonymous messages with a random Facebook friend"
+  # if include_content is true, the contents of the content.html include will be
+  # added right above the generated item list, if present
+  include_content: true
+
+# Dependencies
+markdown: kramdown
+highlighter: rouge
+
+# Permalinks
+permalink: pretty

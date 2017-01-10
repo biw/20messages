@@ -55,7 +55,7 @@ def post_callback():
 
 @app.route("/bye")
 def bye():
-    return "Please return back to the undercover.chat window", 200
+    return "Please return back to the 20messages chat window", 200
 
 
 if __name__ == "__main__":

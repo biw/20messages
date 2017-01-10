@@ -111,7 +111,7 @@ def intro_message(bot, cuser):
                       "&response_type=code&redirect_uri=" +
                       utils.config["website"] + "/fb_callback?id=" + cuser.id)
     elements = []
-    element = Element(title="Let undercover.chat look at your friend list.",
+    element = Element(title="Let 20messages look at your friend list.",
                       image_url=("http://static1.businessinsider.com/image/" +
                                  "559cec8e371d2254008b5ea2/facebook-friend" +
                                  "s-logo-wide.gif"),
@@ -119,7 +119,7 @@ def intro_message(bot, cuser):
                       item_url=permission_url)
     elements.append(element)
     bot.send_generic_message(cuser.id, elements)
-    bot.send_text_message(cuser.id, "Hello, welcome to undercover.chat!")
+    bot.send_text_message(cuser.id, "Hello, welcome to 20messages!")
     bot.send_text_message(
         cuser.id, ("We let you talk with a random Facebook friend anonymously for" +
                    " 20 messages. Then you both vote to share your profile " +
@@ -166,7 +166,7 @@ def found_chat_reply(bot, cuser, other_id):
 
 def send_in_limbo(bot, cuser):
     bot.send_text_message(
-        cuser.id, "Sorry! Still looking for friends! Try to invite them to undercover.chat!")
+        cuser.id, "Sorry! Still looking for friends! Try to invite them to 20messages!")
 
 
 def send_decision_message(bot, cuser):
@@ -234,7 +234,7 @@ def decision_time_yes(bot, cuser, other_user):
     bot.send_text_message(other_user.id, output.format(
         cuser.first_name, cuser.last_name))
 
-    second_out = "Your conversation on undercover.chat with them is over\n"
+    second_out = "Your conversation on 20messages with them is over\n"
     bot.send_text_message(cuser.id, second_out)
     bot.send_text_message(other_user.id, second_out)
 

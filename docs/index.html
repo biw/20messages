@@ -1,1 +1,28 @@
-Welcome to undercover.chat. Please see <a href="https://facebook.com/undercover.chat">https://facebook.com/undercover.chat</a>.
+---
+layout: base
+---
+<div class="wrapper">
+    <header>
+        {% if site.compass.logo %}
+        <div class="logo-container">
+
+          <a class="logo" alt="🕵" href="{{ page.baseurl }}"></a>
+        </div>
+        {% endif %}
+
+        {% if site.compass.name %}
+        <div class="author-container"><h1>{{ site.compass.name }}</h1></div>
+        {% endif %}
+
+        {% if site.compass.tagline %}
+        <div class="tagline-container"><p>{{ site.compass.tagline }}</p></div>
+        {% endif %}
+    </header>
+    <main>
+      {% if site.compass.include_content %}
+      <div class="content">
+        {% include content.html %}
+      </div>
+      {% endif %}
+    </main>
+</div>
