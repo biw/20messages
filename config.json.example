@@ -1,5 +1,6 @@
 {
     "website": "https://example.com",
+    "local_website": "localhost",
     "debug": true,
     "port": 5000,
     "redis_host": "localhost",
