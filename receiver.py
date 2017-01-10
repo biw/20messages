@@ -101,6 +101,11 @@ def handle_postback(raw_event):
 
     red_user = utils.get_redis(cuser.id)
 
+    # welcome message, user has not signed up yet
+    if red_user == None:
+        messages.intro_message(bot, cuser)
+        return
+
     # if something is different between the user and the database user
     if red_user.is_different(cuser):
         utils.set_redis(cuser.id, red_user)
