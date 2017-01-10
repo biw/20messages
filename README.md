@@ -1,7 +1,5 @@
 # 🕵 20messages
 
-##**STILL WAITING ON FACEBOOK APROVAL (DOESN'T WORK FOR GENERAL PUBLIC YET)**
-
 [20messages](https://www.messenger.com/t/20messages) is a [Facebook Messenger](https://messengerplatform.fb.com/) bot that matches users with a random Facebook friend to chat with anonymously for 20 messages on Facebook. After the 20 messages are send, they vote to decide whether to share their identities with each other.
 
 
