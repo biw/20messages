@@ -32,9 +32,9 @@ def get_callback():
         code = data.get("code")
         receiver.handle_auth_message(user_id, code)
 
-        return redirect("/bye", 303)
+        return redirect("https://20messages.com/return", 303)
     else:
-        return "q2", 404
+        return "Something went wrong, please try again.", 404
 
 
 def post_callback():
