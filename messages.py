@@ -125,7 +125,8 @@ def intro_message(bot, cuser):
                    "with each other. It only gets shared if both people agree" +
                    " to share it."))
 
-    bot.send_text_message(cuser.id, "Please click the link above 🔝")
+    bot.send_text_message(cuser.id, ("To start, we need access to your friend " +
+                                     "list. Please click the link above 🔝"))
 
 
 def after_registering(cuser):
