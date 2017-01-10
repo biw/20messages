@@ -111,10 +111,9 @@ def intro_message(bot, cuser):
                       "&response_type=code&redirect_uri=" +
                       utils.config["website"] + "/fb_callback?id=" + cuser.id)
     elements = []
-    element = Element(title="Let 20messages look at your friend list.",
-                      image_url=("http://static1.businessinsider.com/image/" +
-                                 "559cec8e371d2254008b5ea2/facebook-friend" +
-                                 "s-logo-wide.gif"),
+    element = Element(title="Please give 20messages access to your friend list",
+                      image_url=(
+                          "https://20messages.com/images/access_card.png"),
                       subtitle="(We will never post as you)",
                       item_url=permission_url)
     elements.append(element)
