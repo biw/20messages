@@ -1,5 +1,5 @@
-from pymessenger.bot import Bot
-from pymessenger import Element, Button
+from pymessenger2.bot import Bot
+from pymessenger2 import Element, Button
 
 import utils
 import requests

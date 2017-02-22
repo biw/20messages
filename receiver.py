@@ -1,4 +1,4 @@
-from pymessenger.bot import Bot
+from pymessenger2.bot import Bot
 
 # local import
 import utils
