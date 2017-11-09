@@ -10,11 +10,11 @@
 ### Can it message any friend?
 No, only friends who are also using 20messages.
 
-### Why did I have to authorize an application when starting?
-Facebook doesn't give Messenger bots permissions to look at friend lists by default, so we have to request the extra permission. We are only able to look at friends who have also signed up for 20messages.
+###Why did I have to authorize an application when starting?
+Facebook doesn't give Messenger bots permissions to look at friend lists by default, so the extension has to request the extra permission. The extension is only able to look at friends who have also signed up for 20messages.
 
 ### Can I send images?
-Yes. GIF away
+![Yes](https://media.giphy.com/media/2dJ5Iait4QrW8/giphy.gif)
 
 ## License
 MIT
