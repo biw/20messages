@@ -41,7 +41,6 @@ def post_callback():
     data = request.get_json()
 
     if data["object"] == "page":
-
         for entry in data["entry"]:
             for raw_event in entry["messaging"]:
                 try:
