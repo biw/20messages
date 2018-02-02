@@ -1,6 +1,5 @@
 from flask import Flask, request, redirect
 from werkzeug.serving import run_simple
-import json
 
 # local imports
 import utils
@@ -30,9 +29,10 @@ def get_callback():
 
         user_id = data.get("id")
         code = data.get("code")
+
         receiver.handle_auth_message(user_id, code)
 
-        return redirect("https://20messages.com/return", 303)
+        return redirect("https://719ben.com/20messages/return/", 303)
     else:
         return "Something went wrong, please try again.", 404
 
@@ -42,12 +42,13 @@ def post_callback():
 
     if data["object"] == "page":
         for entry in data["entry"]:
-            for raw_event in entry["messaging"]:
-                try:
-                    receiver.handle_event(raw_event)
-                except Exception as exc:
-                    print("\033[93merror: " + str(exc) + "\033[0m")
-                    pass
+            if 'messaging' in entry.keys():
+                for raw_event in entry["messaging"]:
+                    try:
+                        receiver.handle_event(raw_event)
+                    except Exception as exc:
+                        print("\033[93merror: " + str(exc) + "\033[0m")
+                        pass
 
     return "ok", 200
 

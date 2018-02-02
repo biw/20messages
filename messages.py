@@ -40,8 +40,7 @@ class user():
 
     def set_api_key(self, code):
 
-        raw_data = requests.get("https://graph.facebook.com/v2.8/oauth/" +
-                                "access_token?client_id=" +
+        raw_data = requests.get("https://graph.facebook.com/v2.8/oauth/access_token?client_id=" +
                                 utils.config["fb_client_id"] +
                                 "&redirect_uri=" + utils.config["website"] +
                                 "/fb_callback?id=" + self.id + "&client_secret="
@@ -113,7 +112,7 @@ def intro_message(bot, cuser):
     elements = []
     element = Element(title="Please give 20messages access to your friend list",
                       image_url=(
-                          "https://20messages.com/images/access_card.png"),
+                          "https://719ben.com/20messages/images/access_card.png"),
                       subtitle="(We will never post as you)",
                       item_url=permission_url)
     elements.append(element)

@@ -4,8 +4,6 @@ from pymessenger2.bot import Bot
 import utils
 import messages
 
-import json
-
 
 def handle_auth_message(user_id, code):
     # get the info used for all messages
@@ -29,13 +27,16 @@ def handle_auth_message(user_id, code):
 
 
 def handle_event(raw_event):
-    if raw_event.get("message"):  # someone sent us a message
+    # someone sent us a message
+    if raw_event.get("message"):
         handle_message(raw_event)
 
-    if raw_event.get("delivery"):  # delivery confirmation
+    # delivery confirmation
+    if raw_event.get("delivery"):
         handle_delivery(raw_event)
 
-    if raw_event.get("optin"):  # optin confirmation
+    # optin confirmation
+    if raw_event.get("optin"):
         handle_optin(raw_event)
 
     # user clicked/tapped "postback" button in earlier message
@@ -47,11 +48,13 @@ def handle_event(raw_event):
 
 
 def handle_message(raw_event):
-
-    # get the info used for all messages
+    # use pymessenger to make an API call to FB to get the
+    # info about the user who send the message
     bot = Bot(utils.config["page_access_token"])
     user_id = raw_event["sender"]["id"]
-    cuser = messages.user(bot.get_user_info(user_id), user_id)
+    user_info = bot.get_user_info(user_id)
+
+    cuser = messages.user(user_info, user_id)
 
     red_user = utils.get_redis(cuser.id)
 
